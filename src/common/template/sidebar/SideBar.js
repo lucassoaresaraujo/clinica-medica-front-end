@@ -17,16 +17,22 @@ const itensMenu = [
     {
         id: 2,
         icon: 'team',
+        name: 'Paciente',
+        link: '/paciente'
+    },
+    {
+        id: 3,
+        icon: 'team',
         name: 'Fornecedor',
         link: '/fornecedor'
     },
     {
-        id: 3,
+        id: 4,
         icon: 'upload',
-        name: 'Upload',        
+        name: 'Upload',
         children: [
             {
-                id: 4,
+                id: 5,
                 icon: 'user',
                 name: 'Analise',
                 link: '/up',
