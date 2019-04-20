@@ -7,8 +7,8 @@ import {PacienteTypes as Types } from '../types/pacienteTypes';
 
 const INITIAL_VALUES = {}; // valores para inicializar formulários
 
-export function getList(page = 1, paginate = 10, order = 'ASC', orderBy = 'nome'){
-    const request = axios.get(`${BASE_URL}/paciente/?page=${page}&paginate=${paginate}&order=${order}&orderBy=${orderBy}`);
+export function getList(page = 1, paginate = 10, order = 'ASC', orderBy = 'nome', filtro){    
+    const request = axios.get(`${BASE_URL}/paciente/?page=${page}&paginate=${paginate}&order=${order}&orderBy=${orderBy}&filtro=${filtro}`);
     return {
         type: Types.FETCHED,
         payload: request

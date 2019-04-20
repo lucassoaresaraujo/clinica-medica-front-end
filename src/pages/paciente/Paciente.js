@@ -14,7 +14,13 @@ const columns = [
         title: 'Nome',
         dataIndex: 'nome',
         key: 'nome',
-        sorter: (a, b) =>  a.nome.localeCompare(b.nome),
+        sorter: true,
+    },
+    {
+        title: 'CPF',
+        dataIndex: 'cpf',
+        key: 'cpf',
+        render: text => text || <em>não informado</em>
     },
     {
         title: 'Data Nascimento',
@@ -40,7 +46,8 @@ class Paciente extends Component {
         currentPage: 1,
         pageSize: 2,
         order: "ASC",
-        orderBy: "nome"     
+        orderBy: "nome",
+        filtro: ''
     };
 
     componentWillMount() {
@@ -49,15 +56,15 @@ class Paciente extends Component {
             currentPage: this.state.currentPage,
             pageSize: this.state.pageSize,
             order: this.state.order,
-            orderBy: this.state.orderBy
+            orderBy: this.state.orderBy,
+            filtro: this.state.filtro
         }
-        this.props.getList(options.currentPage, options.pageSize, options.order, options.orderBy);
+        this.props.getList(options.currentPage, options.pageSize, options.order, options.orderBy,options.filtro);
         this.setState({loading: false});
     }
 
     onChange = (pagination, filters, sorter) => {
-        const order = this.getOrder(sorter.order);
-        console.log("Order table", order);
+        const order = this.getOrder(sorter.order);        
         this.setState({
             order: order,
             orderBy: sorter.field,
@@ -66,16 +73,17 @@ class Paciente extends Component {
         }, this.realizarConsulta);     
     }
 
-    realizarConsulta = () => {
-        console.log("State Realizar COnsulta", this.state);
+    realizarConsulta = () => {    
         const options = {
             currentPage: this.state.currentPage,
             pageSize: this.state.pageSize,
             order: this.state.order,
-            orderBy: this.state.orderBy
+            orderBy: this.state.orderBy,
+            filtro: this.state.filtro,
         }
         this.setState({loading: true});
-        this.props.getList(options.currentPage, options.pageSize, options.order, options.orderBy);
+        this.props.getList(options.currentPage, options.pageSize, options.order, options.orderBy, options.filtro);
+        console.log(this.props.list);
         this.setState({loading: false});
     }
 
@@ -89,14 +97,37 @@ class Paciente extends Component {
 
     handleSubmitBuscar = (e) => {
         e.preventDefault();
-        console.log("Teste");        
+        this.realizarConsulta();
     }
 
-    render() {
-        console.log('State Render', this.state);  
+    handleSubmitLimpar = e => {
+        e.preventDefault();
+        this.setState({
+            sortedInfo: null,
+            filtro: '',
+            currentPage: 1
+        }, this.realizarConsulta);
+    }
+
+    handleChangeFiltro = (e) => {
+        this.setState({ filtro: e.target.value });
+    }
+
+    showTotal = (total) => {
+        return `Total de ${total} registros encontrados`;
+    }
+
+    render() {         
         const pacientes = this.props.list.pacientes || [];
         const total = this.props.list.total || 0;
-        const pagination = { total: total, pageSize: this.state.pageSize };    
+        const pagination = {
+            total: total,
+            pageSize: this.state.pageSize,
+            showSizeChanger: true,
+            showTotal: this.showTotal,
+            showQuickJumper: true,
+            current: this.state.currentPage
+        };
         return (
              <React.Fragment>
                 <PageHeader 
@@ -105,13 +136,11 @@ class Paciente extends Component {
                     description="Todas as informações dos seus pacientes estão aqui." />
                 <PageContent>
                     <Form layout="inline" onSubmit={this.handleSubmitBuscar}>
-                        <Form.Item label="Nome:">
-                            <Input />
-                        </Form.Item>
-                    
-                        <Form.Item label="CPF:">
-                            <Input />
-                        </Form.Item>
+                        <Form.Item label="Nome ou CPF:">
+                            <Input                                
+                                onChange={this.handleChangeFiltro}
+                                value={this.state.filtro} />
+                        </Form.Item>            
                         <Form.Item>
                             <Button
                                 type="primary"
@@ -120,7 +149,8 @@ class Paciente extends Component {
                             </Button>
                         </Form.Item>
                         <Form.Item>
-                            <Button>
+                            <Button
+                                onClick={this.handleSubmitLimpar}>
                                 Limpar
                             </Button>
                         </Form.Item>
