@@ -8,6 +8,9 @@ import { Link } from 'react-router-dom';
 import { Row, Button, Col, Table, Divider, Pagination, Form, Input } from 'antd';
 import PageHeader from '../../common/widget/PageHeader';
 import PageContent from '../../common/widget/PageContent';
+
+import moment from 'moment';
+import NumberFormat from 'react-number-format';
   
 const columns = [
     {
@@ -20,18 +23,19 @@ const columns = [
         title: 'CPF',
         dataIndex: 'cpf',
         key: 'cpf',
-        render: text => text || <em>não informado</em>
+        render: text => text ? <NumberFormat value={text} displayType={'text'} format="###.###.###-##" /> : <em>não informado</em>
     },
     {
         title: 'Data Nascimento',
         dataIndex: 'dataNascimento',
-        key: 'dataNascimento'
+        key: 'dataNascimento',
+        render: text => moment(text).format("DD/MM/YYYY")
     }, {
         title: 'Ações',
         key: 'acoes',
         render: (text, record) => (
           <span>
-            <a href="javascript:;">Invite {record.id}</a>
+            <a href="javascript:;">Visualizar</a>
             <Divider type="vertical" />
             <a href="javascript:;">Excluir</a>
           </span>
@@ -44,7 +48,7 @@ class Paciente extends Component {
     state = {
         loading: false,
         currentPage: 1,
-        pageSize: 2,
+        pageSize: 5,
         order: "ASC",
         orderBy: "nome",
         filtro: ''
