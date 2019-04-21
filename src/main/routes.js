@@ -4,12 +4,17 @@ import Dashboard from '../pages/dashboard/Dashboard';
 import Teste from '../pages/dashboard/Teste';
 import Fornecedor from '../pages/fornecedor/Fornecedor';
 import Paciente from '../pages/paciente/Paciente';
+import PacienteAdd from '../pages/paciente/PacienteAdd';
 
 const Routes = props => (
     <Switch>
         <Route exact path="/" component={Dashboard} />
         <Route exact path="/fornecedor" component={Fornecedor} />
+
         <Route exact path="/paciente" component={Paciente} />
+        <Route exact path="/paciente/novo" component={PacienteAdd} />
+
+        
         <Route exact path="/teste" component={Teste} />
 
         <Redirect from='*' to='/' />

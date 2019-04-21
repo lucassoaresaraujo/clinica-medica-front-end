@@ -18,7 +18,12 @@ const itensMenu = [
         id: 2,
         icon: 'team',
         name: 'Paciente',
-        link: '/paciente'
+        link: '/paciente',
+        correlate: [
+            {        
+                link: '/paciente/novo',
+            }
+        ]
     },
     {
         id: 3,
@@ -93,14 +98,27 @@ class SideBar extends React.Component{
     }
 
     getSelectedItemMenu = () => {
-        const { pathname } = this.props.location;
-        return itensMenu.filter(item => {
-            if (item.link === pathname)
+        const { pathname } = this.props.location;    
+        return itensMenu.filter(item => {    
+            if (item.link === pathname || this.checkPathNameCorrelate(item.correlate))                
                 return item;
             return null;
         }).map(item => {
             return `${item.id}`;
         }); 
+    }
+
+    checkPathNameCorrelate = correlate => {
+        const { pathname } = this.props.location;        
+        if (Array.isArray(correlate) && correlate.length) {
+            return correlate.map(item => {
+                console.log(pathname);                
+                if (item.link === pathname){
+                    return true
+                }                    
+            });
+        }
+        return false;
     }
 
     render(){

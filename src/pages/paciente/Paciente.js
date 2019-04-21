@@ -54,7 +54,7 @@ class Paciente extends Component {
         filtro: ''
     };
 
-    componentWillMount() {
+    componentDidMount() {
         this.setState({loading: true});
         const options = {
             currentPage: this.state.currentPage,
@@ -135,9 +135,9 @@ class Paciente extends Component {
         return (
              <React.Fragment>
                 <PageHeader 
-                    title="Cadastro de Paciente"
+                    title="Lista de Pacientes"
                     breadcrumb={[{name: 'Home', href: '/'}, {name: 'Paciente'}]}
-                    description="Todas as informações dos seus pacientes estão aqui." />
+                    description="Todas os seus pacientes estão aqui." />
                 <PageContent>
                     <Form layout="inline" onSubmit={this.handleSubmitBuscar}>
                         <Form.Item label="Nome ou CPF:">
@@ -159,7 +159,7 @@ class Paciente extends Component {
                             </Button>
                         </Form.Item>
                         <Form.Item style={{float: "right", marginRight: "0"}}>
-                            <Link to="/"><Button type="primary" icon="plus-circle">Novo Paciente</Button></Link>
+                            <Link to="/paciente/novo"><Button type="primary" icon="plus-circle">Novo Paciente</Button></Link>
                         </Form.Item>
                     </Form>
                     
