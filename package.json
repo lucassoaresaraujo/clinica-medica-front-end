@@ -4,7 +4,7 @@
   "homepage": ".",
   "private": true,
   "dependencies": {
-    "antd": "^3.13.0",
+    "antd": "3.13.0",
     "axios": "^0.18.0",
     "babel-plugin-import": "^1.11.0",
     "customize-cra": "^0.2.10",
