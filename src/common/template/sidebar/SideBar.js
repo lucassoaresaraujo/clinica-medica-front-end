@@ -22,6 +22,9 @@ const itensMenu = [
         correlate: [
             {        
                 link: '/paciente/novo',
+            },
+            {
+                link: '/paciente/alterar',
             }
         ]
     },
@@ -97,28 +100,33 @@ class SideBar extends React.Component{
         });
     }
 
+    checkPathNameCorrelate = (correlate) => {
+        const { pathname } = this.props.location;        
+        if (Array.isArray(correlate) && correlate.length) {            
+            return correlate.map(item => {                
+                if (item.link === pathname){                    
+                    return true;
+                }
+                return false;                  
+            });
+        }        
+        return false;
+    }
+
     getSelectedItemMenu = () => {
-        const { pathname } = this.props.location;    
-        return itensMenu.filter(item => {    
-            if (item.link === pathname || this.checkPathNameCorrelate(item.correlate))                
+        const { pathname } = this.props.location;        
+        return itensMenu.filter(item => {
+            let correlates = [false];
+            if (item.correlate){
+                correlates = this.checkPathNameCorrelate(item.correlate);
+            }            
+            if (item.link === pathname || correlates.includes(true)){
                 return item;
+            }
             return null;
         }).map(item => {
             return `${item.id}`;
         }); 
-    }
-
-    checkPathNameCorrelate = correlate => {
-        const { pathname } = this.props.location;        
-        if (Array.isArray(correlate) && correlate.length) {
-            return correlate.map(item => {
-                console.log(pathname);                
-                if (item.link === pathname){
-                    return true
-                }                    
-            });
-        }
-        return false;
     }
 
     render(){
