@@ -15,7 +15,7 @@ class PacienteAdd extends Component {
                     description="Preencha o formulário abaixo para inserir um novo paciente."/>
 
                 <PageContent>
-                    <Form />
+                    <Form readOnly={false} />
                 </PageContent>
             </React.Fragment>
          );

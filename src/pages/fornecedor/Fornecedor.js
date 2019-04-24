@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../../common/widget/PageHeader';
 import PageContent from '../../common/widget/PageContent';
-import { Row, Button, Col, Table } from 'antd';
+import { Row, Button, Table } from 'antd';
 
 const dataSource = [{
     key: '1',

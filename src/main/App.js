@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './App.css';
+
 
 import Routes from './routes';
 
@@ -9,6 +9,8 @@ import { Layout } from 'antd';
 import SideBar from '../common/template/sidebar/SideBar';
 import TopBar from '../common/template/topbar/TopBar';
 import history from './history';
+import './App.css';
+
 const {Content} = Layout;
 
 class App extends Component {

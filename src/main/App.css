@@ -1,3 +1,20 @@
-ya.app{
-  margin: 10px;
+.ant-input {
+  border: 1px solid #a9a6a6;
+}
+
+.ant-select-selection {
+  border: 1px solid #a9a6a6;
+}
+
+.ant-btn-dashed {
+  border-color: #a9a6a6;
+}
+
+.dynamic-delete-button {
+  cursor: pointer;
+  position: relative;
+  top: 4px;
+  font-size: 24px;
+  color: #999;
+  transition: all .3s;
 }

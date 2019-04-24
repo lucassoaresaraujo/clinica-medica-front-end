@@ -1,11 +1,13 @@
 import {BASE_URL} from '../main/config';
-import history from '../main/history';
 
 import axios from 'axios';
+import {reset as resetForm, initialize} from 'redux-form';
 
 import {PacienteTypes as Types } from '../types/pacienteTypes';
 
-const INITIAL_VALUES = {}; // valores para inicializar formulários
+const INITIAL_VALUES = {
+    telefones: [{}, {}]
+}; 
 
 export function getList(page = 1, paginate = 10, order = 'ASC', orderBy = 'nome', filtro){    
     const request = axios.get(`${BASE_URL}/paciente/?page=${page}&paginate=${paginate}&order=${order}&orderBy=${orderBy}&filtro=${filtro}`);
@@ -13,4 +15,10 @@ export function getList(page = 1, paginate = 10, order = 'ASC', orderBy = 'nome'
         type: Types.FETCHED,
         payload: request
     }
+}
+
+export function init() {    
+    return [
+        initialize('pacienteForm', INITIAL_VALUES)        
+    ];
 }

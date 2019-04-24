@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 import {getList} from '../../actions/pacienteActions';
 
 import { Link } from 'react-router-dom';
-import { Row, Button, Col, Table, Divider, Pagination, Form, Input } from 'antd';
+import { Row, Button, Table, Divider, Form, Input } from 'antd';
 import PageHeader from '../../common/widget/PageHeader';
 import PageContent from '../../common/widget/PageContent';
 
@@ -35,9 +35,9 @@ const columns = [
         key: 'acoes',
         render: (text, record) => (
           <span>
-            <a href="javascript:;">Visualizar</a>
+            <a href="#">Visualizar</a>
             <Divider type="vertical" />
-            <a href="javascript:;">Excluir</a>
+            <a href="#">Excluir</a>
           </span>
         ),
       }

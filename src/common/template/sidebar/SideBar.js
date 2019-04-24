@@ -138,7 +138,7 @@ class SideBar extends React.Component{
                 collapsible          
                 breakpoint="lg"          
                 collapsed={collapsed}
-                width={256}
+                width={256}                
             >
                 <div className="logo" />
                 <Menu theme="dark" mode="inline" selectedKeys={this.getSelectedItemMenu()}>
