@@ -1,12 +1,13 @@
 import {BASE_URL} from '../main/config';
 
 import axios from 'axios';
-import {reset as resetForm, initialize} from 'redux-form';
+import {reset as resetForm, initialize, registerField} from 'redux-form';
 
 import {PacienteTypes as Types } from '../types/pacienteTypes';
 
 const INITIAL_VALUES = {
-    telefones: [{}, {}]
+    telefones: [{}],
+    enderecos: [{}]
 }; 
 
 export function getList(page = 1, paginate = 10, order = 'ASC', orderBy = 'nome', filtro){    
@@ -19,6 +20,7 @@ export function getList(page = 1, paginate = 10, order = 'ASC', orderBy = 'nome'
 
 export function init() {    
     return [
-        initialize('pacienteForm', INITIAL_VALUES)        
+        initialize('pacienteForm', INITIAL_VALUES),
+        registerField('pacienteForm', 'telefones', 'FieldArray')
     ];
 }
