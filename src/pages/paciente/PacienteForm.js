@@ -8,17 +8,35 @@ import { getGeneroSexual } from '../../actions/generoSexualActions';
 import { getEscolaridade } from '../../actions/escolaridadeActions';
 import { getTipoSanguineo } from '../../actions/tipoSanguineoActions';
 import { getSituacaoFamiliar } from '../../actions/situacaoFamiliarActions';
-import { getEstados } from '../../actions/enderecoActions';
+import { getEstados, getCidades } from '../../actions/enderecoActions';
 import { init } from '../../actions/pacienteActions';
 
-import { Form, Input, DatePicker, Select, Icon, Button, Collapse } from 'antd';
+import MaskedInput from 'react-text-mask';
+import { Form, Input, Select, Icon, Button, Collapse, DatePicker, InputNumber } from 'antd';
 import NumberFormat from 'react-number-format';
+import FooterToolbar from '../../common/widget/FooterToolbar/FooterToolbar';
+
 
 const Option = Select.Option;
 const Panel = Collapse.Panel;
 
+const makeField = Component => ({ input, meta, children, hasFeedback, label, ...rest }) => {
+  //const hasError = meta.touched && meta.invalid;
+  return (  
+      <Component {...input} {...rest} children={children} />  
+  );
+};
+
+const AInput = makeField(Input);
+const ASelect = makeField(Select);
+const ANumberFormat = makeField(NumberFormat);
+const AMaskedInput = makeField(MaskedInput);
+
+
 class PacienteForm extends Component {
-    state = {  };
+    state = {
+      loadingCidades: false
+    };
 
     onChangeDate = (date, dateString) => {
       console.log(date, dateString);
@@ -49,8 +67,27 @@ class PacienteForm extends Component {
 
     removeTelefone = (index) => {
       if (!this.props.readOnly && this.props.telefones.length > 1) {
-        this.props.arrayRemove('pacienteForm', 'telefones', index);
+          this.props.arrayRemove('pacienteForm', 'telefones', index);
       }
+    }
+
+    onChangeEstado = value => {
+      console.log(value);
+      this.setState({loadingCidades: true});
+      if (value) {
+        this.props.getCidades(value);
+      }
+      this.setState({loadingCidades: false});
+      console.log(this.props.cidades);
+    }
+
+    handleSubmit = (e) => {
+      e.preventDefault();
+      this.props.form.validateFieldsAndScroll((err, values) => {
+        if (!err) {
+          console.log('Received values of form: ', values);
+        }
+      });
     }
 
     render() {
@@ -107,8 +144,11 @@ class PacienteForm extends Component {
         },
       };      
 
-      const {handleSubmit, readOnly, generoSexualList, escolaridadeList, tipoSanguineoList, situacaoFamiliarList, estadosList } = this.props;
+      const {readOnly, generoSexualList, escolaridadeList, situacaoFamiliarList, estadosList, cidadesList } = this.props;
+      const { getFieldDecorator, getFieldProps } = this.props.form;
       const telefones = this.props.telefones || [];
+      const dateFormatList = ['DD/MM/YYYY','DD/MM/YY'];
+      const cidades = cidadesList || [];
       const fieldsTelefone = telefones.map((item, index) => (      
         <Form.Item 
           key={`fi-${index}`}          
@@ -118,13 +158,15 @@ class PacienteForm extends Component {
           id="form.telefones.label"
         >
           <Field key={`fd-${index}`}  
-            name={`telefones[${index}].numero`} 
+            name={`telefones[${index}].numero`}
             style={{ width: '60%', marginRight: 8 }} 
             readOnly={readOnly} 
-            props={{className: 'ant-input', 
-            format: '(##)#####-####', 
-            placeholder: "(__)_____-____"}} 
-            component={NumberFormat} 
+            props={{
+                className: 'ant-input', 
+                format: '(##)#####-####', 
+                placeholder: "(__)_____-____",                
+              }} 
+            component={ANumberFormat} 
             placeholder={`Telefone ${index+1}`}
           />
 
@@ -137,71 +179,161 @@ class PacienteForm extends Component {
           ) : null}
           
         </Form.Item>
-      ));
+      ));      
 
       return ( 
-          <Form onSubmit={handleSubmit}>
+          <Form onSubmit={this.handleSubmit}>
             
-            <Collapse defaultActiveKey={['1']}>
+            <Collapse defaultActiveKey={['1']} style={{marginBottom: '15px'}}>
               <Panel header="Informações Básicas" key="1">
               
                 <Form.Item {...formItemLayout} label="Nome Completo:" id="form.nome.label" required>
-                    <Field name="nome" readOnly={readOnly} component={Input} placeholder="Digite aqui o nome completo do paciente" />
+                  {
+                    getFieldDecorator('nome', {
+                    rules: [
+                      {
+                        required: true, message: 'Por favor, insira o nome do paciente!',
+                      }
+                    ],
+                    })(
+                      <Input name="nome" readOnly={readOnly} placeholder="Digite aqui o nome completo do paciente" />
+                    )
+                  }                    
                 </Form.Item>
                 <Form.Item {...formItemLayoutSmall} label="Gênero Sexual:" id="form.GeneroId.label">
-                    <Field name="GeneroId" readOnly={readOnly} placeholder="Selecione" component={Select}>
-                      {this.renderOptions(generoSexualList)}
-                    </Field>
+                  {
+                    getFieldDecorator('GeneroId')(
+                      <Select name="nome" readOnly={readOnly} placeholder="Selecione">
+                        {this.renderOptions(generoSexualList)}
+                      </Select>
+                    )
+                  }                    
                 </Form.Item>
-                <Form.Item {...formItemLayoutSmall} label="Data de Nascimento:" id="form.datanascimento.label" required>
-                    <Field name="dataNascimento" props={{onChange: this.onChangeDate, format: 'DD/MM/YYYY', placeholder: "__/__/____"}} readOnly={readOnly} component={DatePicker}  />
+                 <Form.Item {...formItemLayoutSmall} label="Data de Nascimento:" id="form.datanascimento.label" required>
+                  {
+                    getFieldDecorator('dataNascimento', {
+                    rules: [
+                      {
+                        type: 'object',
+                        required: true,
+                        message: 'Por favor, insira a data de nascimento do paciente!',
+                      }
+                    ],
+                    })(
+                      <DatePicker name="dataNascimento" format='DD/MM/YYYY' readOnly={readOnly} />
+                    )
+                  }                    
                 </Form.Item>
-                <Form.Item {...formItemLayoutSmall} label="CPF:" id="form.cpf.label">
-                    <Field name="cpf" props={{className: 'ant-input', format: '###.###.###-##', placeholder: "___.___.___-__"}} readOnly={readOnly} component={NumberFormat}  />
+                 <Form.Item {...formItemLayoutSmall} label="CPF:" id="form.cpf.label">                  
+                  <NumberFormat {...getFieldProps('cpf')} name="cpf" className='ant-input' format='###.###.###-##' placeholder="___.___.___-__" readOnly={readOnly} />
                 </Form.Item>
                 <Form.Item {...formItemLayoutSmall} label="Documento de Identidade:" id="form.documentoIdentidade.label">
-                    <Field name="documentoIdentidade" readOnly={readOnly} component={Input}  />
+                  {
+                    getFieldDecorator('documentoIdentidade')
+                    (
+                      <Input name="documentoIdentidade" readOnly={readOnly}  />
+                    )
+                  }                    
                 </Form.Item>
                 <Form.Item {...formItemLayoutMedium} label="Naturalidade:" id="form.naturalidade.label">
-                    <Field name="naturalidade" readOnly={readOnly} component={Input} placeholder="Cidade de nascimento"/>
+                  {
+                    getFieldDecorator('naturalidade')
+                    (
+                      <Input name="naturalidade" readOnly={readOnly} placeholder="Cidade de nascimento" />
+                    )
+                  }                    
                 </Form.Item>
                 <Form.Item {...formItemLayoutMedium} label="Nacionalidade:" id="form.nacionalidade.label">
-                    <Field name="nacionalidade" readOnly={readOnly} component={Input} placeholder="País de nascimento"/>
+                  {
+                    getFieldDecorator('nacionalidade')
+                    (
+                      <Input name="nacionalidade" readOnly={readOnly} placeholder="País de nascimento" />
+                    )
+                  }                    
                 </Form.Item>
-              
+               
               </Panel>
               
               <Panel header="Informações de Endereço" key="2">
                   <Form.Item {...formItemLayout} label="Logradouro:" id="form.logradouro.label">
-                      <Field name="enderecos[0].logradouro" readOnly={readOnly} component={Input} placeholder="Ex.: Rua Sete de Setembro"/>
+                    {
+                      getFieldDecorator('enderecos[0].logradouro')
+                      (
+                        <Input name="enderecos[0].logradouro" readOnly={readOnly} placeholder="Ex.: Rua Sete de Setembro" />
+                      )
+                    }                      
                   </Form.Item>
                   <Form.Item {...formItemLayoutMedium} label="Bairro:" id="form.bairro.label">
-                      <Field name="enderecos[0].bairro" readOnly={readOnly} component={Input} placeholder="Ex.: Centro"/>
+                    {
+                      getFieldDecorator('enderecos[0].bairro')
+                      (
+                        <Input name="enderecos[0].bairro" readOnly={readOnly} placeholder="Ex.: Centro" />
+                      )
+                    }
                   </Form.Item>
                   <Form.Item {...formItemLayoutSmall} label="Número:" id="form.numero.label">
-                      <Field name="enderecos[0].numero" readOnly={readOnly} component={Input} />
+                    {
+                      getFieldDecorator('enderecos[0].numero')
+                      (
+                        <Input name="enderecos[0].numero" readOnly={readOnly} />
+                      )
+                    }
                   </Form.Item>
                   <Form.Item {...formItemLayoutMedium} label="Complemento:" id="form.complemento.label">
-                      <Field name="enderecos[0].complemento" readOnly={readOnly} component={Input} />
+                    {
+                      getFieldDecorator('enderecos[0].complemento')
+                      (
+                        <Input name="enderecos[0].complemento" readOnly={readOnly} />
+                      )
+                    }
                   </Form.Item>
                   <Form.Item {...formItemLayoutMedium} label="Referência:" id="form.referencia.label">
-                      <Field name="enderecos[0].referencia" readOnly={readOnly} component={Input} />
+                    {
+                      getFieldDecorator('enderecos[0].referencia')
+                      (
+                        <Input name="enderecos[0].referencia" readOnly={readOnly} />
+                      )
+                    }
                   </Form.Item>
-                  <Form.Item {...formItemLayoutSmall} label="CEP::" id="form.cep.label">
-                      <Field name="enderecos[0].cep" props={{className: 'ant-input', format: '##.###-###', placeholder: "__.___-___"}} readOnly={readOnly} component={NumberFormat}  />
+                  <Form.Item {...formItemLayoutSmall} label="CEP:" id="form.cep.label">                    
+                      <NumberFormat {...getFieldProps('enderecos[0].cep')} name="enderecos[0].cep" className='ant-input' format='##.###-###' placeholder="__.___-___" readOnly={readOnly} />                      
                   </Form.Item>
                   <Form.Item {...formItemLayoutMedium} label="Estado:" id="form.estado.label">
-                      <Field readOnly={readOnly} placeholder="Selecione" component={Select}>
-                        {this.renderOptions(estadosList)}
-                      </Field>
+                    {
+                      getFieldDecorator('estado')(
+                        <Select name="estado" readOnly={readOnly} placeholder="Selecione" onChange={this.onChangeEstado}>
+                          {this.renderOptions(estadosList)}
+                        </Select>
+                      )
+                    }
+                  </Form.Item>
+                 <Form.Item {...formItemLayoutMedium} label="Cidade:" id="form.cidade.label">
+                    {
+                      getFieldDecorator('enderecos[0].cidadeId')(
+                        <Select name="enderecos[0].cidadeId" loading={this.state.loadingCidades} readOnly={readOnly} placeholder="Selecione">
+                          {this.renderOptions(cidades)}
+                        </Select>
+                      )
+                    }                      
                   </Form.Item>
               
               </Panel>
-              
+               
               <Panel header="Informações para Contato" key="3">
 
                   <Form.Item {...formItemLayoutMedium} label="Email:" id="form.email.label">
-                      <Field name="email" readOnly={readOnly} component={Input} type='email' placeholder="exemplo@gmail.com"/>
+                    {
+                      getFieldDecorator('email', {
+                        rules: [
+                          {
+                          type: 'email', message: 'Por favor, insira um email válido!',
+                          }
+                        ]
+                      })
+                      (
+                      <Input name="email" readOnly={readOnly} placeholder="exemplo@gmail.com" />
+                      )
+                    }                      
                   </Form.Item>
                   {fieldsTelefone}
                   <Form.Item {...formItemLayoutSmallWithOutLabel}>
@@ -209,42 +341,41 @@ class PacienteForm extends Component {
                       <Icon type="plus" /> Telefone
                     </Button>
                   </Form.Item>
-              
+                  
               </Panel>
-
+            {/*
               <Panel header="Informações sobre Família" key="4">
                   <Form.Item {...formItemLayout} label="Nome do Pai:" id="form.nomePai.label">
-                      <Field name="nomePai" readOnly={readOnly} component={Input} placeholder="Nome completo do pai do paciente" />
+                      <Field name="nomePai" readOnly={readOnly} component={AInput} placeholder="Nome completo do pai do paciente" />
                   </Form.Item>
                   <Form.Item {...formItemLayout} label="Nome da Mãe:" id="form.nomeMae.label">
-                      <Field name="nomeMae" readOnly={readOnly} component={Input} placeholder="Nome completo da mãe do paciente" />
+                      <Field name="nomeMae" readOnly={readOnly} component={AInput} placeholder="Nome completo da mãe do paciente" />
                   </Form.Item>
                   <Form.Item {...formItemLayout} label="Situação Familiar:" id="form.SituacaoFamiliar.label">
-                      <Field name="SituacaoFamiliarId" readOnly={readOnly} placeholder="Selecione" component={Select}>
+                      <Field name="SituacaoFamiliarId" readOnly={readOnly} placeholder="Selecione" component={ASelect}>
                         {this.renderOptions(situacaoFamiliarList)}
                       </Field>
                   </Form.Item>
               
               </Panel>
 
-              <Panel header="Informações profissionais e acadêmicas" key="5">              
+              <Panel header="Informações profissionais e acadêmicas" key="5">               
                   <Form.Item {...formItemLayoutMedium} label="Profissão:" id="form.profissao.label">
-                      <Field name="profissao" readOnly={readOnly} component={Input} placeholder="Profissão"/>
+                      <Field name="profissao" readOnly={readOnly} component={AInput} placeholder="Profissão"/>
                   </Form.Item>
                   <Form.Item {...formItemLayoutMedium} label="Escolaridade:" id="form.EscolaridadeId.label">
-                      <Field name="EscolaridadeId" readOnly={readOnly} placeholder="Selecione" component={Select}>
+                      <Field name="EscolaridadeId" readOnly={readOnly} placeholder="Selecione" component={ASelect}>
                         {this.renderOptions(escolaridadeList)}
                       </Field>
                   </Form.Item>                  
-              </Panel>
+              </Panel>*/}
               
             </Collapse>
 
-                {/* <Form.Item {...formItemLayoutSmall} label="Tipo Sanguíneo:" id="form.TipoSanguineo.label">
-                    <Field name="TipoSanguineoId" readOnly={readOnly} placeholder="Selecione" component={Select}>
-                      {this.renderOptions(tipoSanguineoList)}
-                    </Field>
-                </Form.Item> */}
+            
+            <FooterToolbar>
+              <Button htmlType="submit" type="primary">Salvar Paciente</Button>
+            </FooterToolbar>
                 
           </Form>
         );
@@ -252,18 +383,19 @@ class PacienteForm extends Component {
 }
 
 
-const mapStateToProps = state => ({
-    telefones: selector(state, 'telefones'),
-    generoSexualList: state.generoSexual.list,
-    escolaridadeList: state.escolaridade.list,
-    tipoSanguineoList: state.tipoSanguineo.list,
-    situacaoFamiliarList: state.situacaoFamiliar.list,
-    estadosList: state.endereco.estadosList
-});
-const mapDispatchToProps = dispatch => bindActionCreators({
-  arrayInsert, arrayRemove, getGeneroSexual, getEscolaridade, getTipoSanguineo, getSituacaoFamiliar, getEstados, init
-}, dispatch);
-PacienteForm = reduxForm({form: 'pacienteForm', destroyOnUnmount: false})(connect(mapStateToProps, mapDispatchToProps)(PacienteForm));
-const selector = formValueSelector('pacienteForm');
+const WrappedPacienteForm = Form.create({name: 'pacienteForm'})(PacienteForm);
 
-export default PacienteForm;
+const mapStateToProps = state => ({
+  generoSexualList: state.generoSexual.list,
+  escolaridadeList: state.escolaridade.list,
+  tipoSanguineoList: state.tipoSanguineo.list,
+  situacaoFamiliarList: state.situacaoFamiliar.list,
+  estadosList: state.endereco.estadosList,
+  cidadesList: state.endereco.cidadesList
+});
+
+const mapDispatchToProps = dispatch => bindActionCreators({
+  getGeneroSexual, getEscolaridade, getTipoSanguineo, getSituacaoFamiliar, getEstados, getCidades, init
+}, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(WrappedPacienteForm);

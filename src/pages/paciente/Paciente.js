@@ -35,9 +35,9 @@ const columns = [
         key: 'acoes',
         render: (text, record) => (
           <span>
-            <a href="#">Visualizar</a>
+            <a href="/">Visualizar</a>
             <Divider type="vertical" />
-            <a href="#">Excluir</a>
+            <a href="/">Excluir</a>
           </span>
         ),
       }

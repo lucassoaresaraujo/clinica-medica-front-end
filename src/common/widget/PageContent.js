@@ -5,7 +5,7 @@ class PageContent extends React.Component{
 
     render(){
         return (
-            <Card bordered={false} style={{margin: '15px 16px', background: '#fff', minHeight: 280}}>
+            <Card bordered={false} style={{margin: '10px 16px', background: '#fff', minHeight: 280}}>
                 {this.props.children}
             </Card>
         );

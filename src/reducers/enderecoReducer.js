@@ -1,6 +1,6 @@
 import {EnderecoTypes as Types} from '../types/enderecoTypes';
 
-const INITIAL_STATE = {list: []};
+const INITIAL_STATE = {estadosList: [], cidadesList: []};
 
 export default (state = INITIAL_STATE, action) => {
     switch (action.type){
@@ -9,6 +9,13 @@ export default (state = INITIAL_STATE, action) => {
                 ...state,
                 estadosList: action.payload.data.lista
             };
+
+        case Types.CIDADES_FETCHED:
+            return {
+                ...state,
+                cidadesList: action.payload.data.lista
+            };
+        
         default: return state;
     }
 }

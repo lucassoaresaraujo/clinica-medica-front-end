@@ -10,3 +10,13 @@ export function getEstados(){
         payload: request
     }
 }
+
+export function getCidades(estadoId) {
+    if (estadoId !== undefined){
+        const request = axios.get(`${BASE_URL}/cidade/${estadoId}`);
+        return {
+            type: Types.CIDADES_FETCHED,
+            payload: request
+        }
+    }
+}

@@ -1,3 +1,23 @@
+.ant-layout-sider-children {
+  position: fixed;
+  width: 256px;
+}
+
+.ant-layout-sider-collapsed .ant-layout-sider-children {
+  width: 80px;
+}
+
+.ant-layout-header{
+  position: fixed !important;
+  top: 0;
+  width: 100%;
+  z-index: 2;
+}
+
+.ant-layout-content {
+  margin-top: 64px;
+}
+
 .ant-input {
   border: 1px solid #a9a6a6;
 }

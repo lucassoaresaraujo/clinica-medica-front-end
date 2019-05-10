@@ -18,8 +18,8 @@ import './index.css';
 
 const devTools = window.__REDUX_DEVTOOLS_EXTENSION__
         && window.__REDUX_DEVTOOLS_EXTENSION__();
+//const store = applyMiddleware(multi, thunk, promise)(createStore)(reducers, devTools);
 const store = applyMiddleware(multi, thunk, promise)(createStore)(reducers, devTools);
-
 const WrapperApp = props => (
     <Provider store={store}>
         <LocaleProvider locale={ptBR}>
