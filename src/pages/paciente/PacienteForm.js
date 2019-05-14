@@ -1,18 +1,14 @@
 import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { arrayInsert, arrayRemove, reduxForm, Field } from 'redux-form';
-import { formValueSelector } from 'redux-form';
 
 import { getGeneroSexual } from '../../actions/generoSexualActions';
 import { getEscolaridade } from '../../actions/escolaridadeActions';
 import { getTipoSanguineo } from '../../actions/tipoSanguineoActions';
 import { getSituacaoFamiliar } from '../../actions/situacaoFamiliarActions';
 import { getEstados, getCidades } from '../../actions/enderecoActions';
-import { init } from '../../actions/pacienteActions';
 
-import MaskedInput from 'react-text-mask';
-import { Form, Input, Select, Icon, Button, Collapse, DatePicker, InputNumber } from 'antd';
+import { Form, Input, Select, Icon, Button, Collapse, DatePicker } from 'antd';
 import NumberFormat from 'react-number-format';
 import FooterToolbar from '../../common/widget/FooterToolbar/FooterToolbar';
 
@@ -20,18 +16,7 @@ import FooterToolbar from '../../common/widget/FooterToolbar/FooterToolbar';
 const Option = Select.Option;
 const Panel = Collapse.Panel;
 
-const makeField = Component => ({ input, meta, children, hasFeedback, label, ...rest }) => {
-  //const hasError = meta.touched && meta.invalid;
-  return (  
-      <Component {...input} {...rest} children={children} />  
-  );
-};
-
-const AInput = makeField(Input);
-const ASelect = makeField(Select);
-const ANumberFormat = makeField(NumberFormat);
-const AMaskedInput = makeField(MaskedInput);
-
+let id = 0;
 
 class PacienteForm extends Component {
     state = {
@@ -49,7 +34,6 @@ class PacienteForm extends Component {
       props.getTipoSanguineo();
       props.getSituacaoFamiliar();
       props.getEstados();
-      props.init();
     }
 
     renderOptions(list) {
@@ -59,16 +43,25 @@ class PacienteForm extends Component {
       ));
     }
 
-    addTelefone = (index, item = {}) => {      
-      if (!this.props.readOnly) {
-        this.props.arrayInsert('pacienteForm', 'telefones', index, item);
-      }
+    addTelefone = () => {
+      const { form } = this.props;
+      const telefones = form.getFieldValue('fones');
+      console.log(telefones);
+      const nextTelefone = telefones.concat(id++);
+      form.setFieldsValue({
+        fones: nextTelefone
+      });
     }
 
-    removeTelefone = (index) => {
-      if (!this.props.readOnly && this.props.telefones.length > 1) {
-          this.props.arrayRemove('pacienteForm', 'telefones', index);
-      }
+    removeTelefone = t => {
+      const { form } = this.props;
+      const telefones = form.getFieldValue('fones');
+      if (telefones.length === 1) {
+        return;
+      }      
+      form.setFieldsValue({
+        fones: telefones.filter(telefone => telefone !== t),
+      });
     }
 
     onChangeEstado = value => {
@@ -76,9 +69,11 @@ class PacienteForm extends Component {
       this.setState({loadingCidades: true});
       if (value) {
         this.props.getCidades(value);
+        this.props.form.setFieldsValue({
+          'enderecos[0].cidadeId': null
+        });
       }
-      this.setState({loadingCidades: false});
-      console.log(this.props.cidades);
+      this.setState({loadingCidades: false});      
     }
 
     handleSubmit = (e) => {
@@ -145,36 +140,34 @@ class PacienteForm extends Component {
       };      
 
       const {readOnly, generoSexualList, escolaridadeList, situacaoFamiliarList, estadosList, cidadesList } = this.props;
-      const { getFieldDecorator, getFieldProps } = this.props.form;
-      const telefones = this.props.telefones || [];
-      const dateFormatList = ['DD/MM/YYYY','DD/MM/YY'];
+      const { getFieldDecorator, getFieldProps, getFieldValue } = this.props.form;
+
       const cidades = cidadesList || [];
-      const fieldsTelefone = telefones.map((item, index) => (      
+
+      getFieldDecorator('fones', {initialValue: []});
+      const telefones = getFieldValue('fones');
+      const fieldsTelefone = telefones.map((t, index) => (
         <Form.Item 
-          key={`fi-${index}`}          
+          key={t}
           {...(index === 0 ? formItemLayoutSmall : formItemLayoutSmallWithOutLabel)}
           label={index === 0 ? 'Telefones' : ''}
           required={false}
-          id="form.telefones.label"
+          id="form.fones.label"
         >
-          <Field key={`fd-${index}`}  
-            name={`telefones[${index}].numero`}
+          <NumberFormat 
+            {...getFieldProps(`telefones[${t}].numero`)}
+            className='ant-input' 
+            format='(##)#####-####' 
+            placeholder="(__)_____-____" 
+            readOnly={readOnly}
             style={{ width: '60%', marginRight: 8 }} 
-            readOnly={readOnly} 
-            props={{
-                className: 'ant-input', 
-                format: '(##)#####-####', 
-                placeholder: "(__)_____-____",                
-              }} 
-            component={ANumberFormat} 
-            placeholder={`Telefone ${index+1}`}
           />
 
           {telefones.length > 1 ? ( 
             <Icon key={`ic-${index}`}             
               className="dynamic-delete-button"
               type="minus-circle"
-              onClick={() => this.removeTelefone(index)}
+              onClick={() => this.removeTelefone(t)}
               />
           ) : null}
           
@@ -229,24 +222,19 @@ class PacienteForm extends Component {
                 </Form.Item>
                 <Form.Item {...formItemLayoutSmall} label="Documento de Identidade:" id="form.documentoIdentidade.label">
                   {
-                    getFieldDecorator('documentoIdentidade')
-                    (
-                      <Input name="documentoIdentidade" readOnly={readOnly}  />
-                    )
+                    getFieldDecorator('documentoIdentidade')(<Input name="documentoIdentidade" readOnly={readOnly}  />)
                   }                    
                 </Form.Item>
                 <Form.Item {...formItemLayoutMedium} label="Naturalidade:" id="form.naturalidade.label">
                   {
-                    getFieldDecorator('naturalidade')
-                    (
+                    getFieldDecorator('naturalidade')(
                       <Input name="naturalidade" readOnly={readOnly} placeholder="Cidade de nascimento" />
-                    )
+                      )
                   }                    
                 </Form.Item>
                 <Form.Item {...formItemLayoutMedium} label="Nacionalidade:" id="form.nacionalidade.label">
                   {
-                    getFieldDecorator('nacionalidade')
-                    (
+                    getFieldDecorator('nacionalidade')(
                       <Input name="nacionalidade" readOnly={readOnly} placeholder="País de nascimento" />
                     )
                   }                    
@@ -257,40 +245,35 @@ class PacienteForm extends Component {
               <Panel header="Informações de Endereço" key="2">
                   <Form.Item {...formItemLayout} label="Logradouro:" id="form.logradouro.label">
                     {
-                      getFieldDecorator('enderecos[0].logradouro')
-                      (
+                      getFieldDecorator('enderecos[0].logradouro')(
                         <Input name="enderecos[0].logradouro" readOnly={readOnly} placeholder="Ex.: Rua Sete de Setembro" />
                       )
                     }                      
                   </Form.Item>
                   <Form.Item {...formItemLayoutMedium} label="Bairro:" id="form.bairro.label">
                     {
-                      getFieldDecorator('enderecos[0].bairro')
-                      (
+                      getFieldDecorator('enderecos[0].bairro')(
                         <Input name="enderecos[0].bairro" readOnly={readOnly} placeholder="Ex.: Centro" />
                       )
                     }
                   </Form.Item>
                   <Form.Item {...formItemLayoutSmall} label="Número:" id="form.numero.label">
                     {
-                      getFieldDecorator('enderecos[0].numero')
-                      (
+                      getFieldDecorator('enderecos[0].numero')(
                         <Input name="enderecos[0].numero" readOnly={readOnly} />
                       )
                     }
                   </Form.Item>
                   <Form.Item {...formItemLayoutMedium} label="Complemento:" id="form.complemento.label">
                     {
-                      getFieldDecorator('enderecos[0].complemento')
-                      (
+                      getFieldDecorator('enderecos[0].complemento')(
                         <Input name="enderecos[0].complemento" readOnly={readOnly} />
                       )
                     }
                   </Form.Item>
                   <Form.Item {...formItemLayoutMedium} label="Referência:" id="form.referencia.label">
                     {
-                      getFieldDecorator('enderecos[0].referencia')
-                      (
+                      getFieldDecorator('enderecos[0].referencia')(
                         <Input name="enderecos[0].referencia" readOnly={readOnly} />
                       )
                     }
@@ -329,46 +312,65 @@ class PacienteForm extends Component {
                           type: 'email', message: 'Por favor, insira um email válido!',
                           }
                         ]
-                      })
-                      (
+                      })(
                       <Input name="email" readOnly={readOnly} placeholder="exemplo@gmail.com" />
                       )
                     }                      
                   </Form.Item>
                   {fieldsTelefone}
                   <Form.Item {...formItemLayoutSmallWithOutLabel}>
-                    <Button type="dashed" style={{ width: '60%' }} onClick={() => this.addTelefone(telefones.length)}>
+                    <Button type="dashed" style={{ width: '60%' }} onClick={this.addTelefone}>
                       <Icon type="plus" /> Telefone
                     </Button>
                   </Form.Item>
                   
               </Panel>
-            {/*
+            
               <Panel header="Informações sobre Família" key="4">
                   <Form.Item {...formItemLayout} label="Nome do Pai:" id="form.nomePai.label">
-                      <Field name="nomePai" readOnly={readOnly} component={AInput} placeholder="Nome completo do pai do paciente" />
+                    {
+                      getFieldDecorator('nomePai')(
+                        <Input readOnly={readOnly} placeholder="Digite o nome completo do pai do paciente" />
+                      )
+                    }                      
                   </Form.Item>
                   <Form.Item {...formItemLayout} label="Nome da Mãe:" id="form.nomeMae.label">
-                      <Field name="nomeMae" readOnly={readOnly} component={AInput} placeholder="Nome completo da mãe do paciente" />
+                    {
+                      getFieldDecorator('nomeMae')(
+                        <Input readOnly={readOnly} placeholder="Digite o nome completo da mãe do paciente" />
+                      )
+                    }                      
                   </Form.Item>
                   <Form.Item {...formItemLayout} label="Situação Familiar:" id="form.SituacaoFamiliar.label">
-                      <Field name="SituacaoFamiliarId" readOnly={readOnly} placeholder="Selecione" component={ASelect}>
-                        {this.renderOptions(situacaoFamiliarList)}
-                      </Field>
+                    {
+                      getFieldDecorator('SituacaoFamiliarId')(
+                        <Select readOnly={readOnly} placeholder="Selecione">
+                          {this.renderOptions(situacaoFamiliarList)}
+                        </Select>
+                      )
+                    }                      
                   </Form.Item>
               
               </Panel>
 
               <Panel header="Informações profissionais e acadêmicas" key="5">               
                   <Form.Item {...formItemLayoutMedium} label="Profissão:" id="form.profissao.label">
-                      <Field name="profissao" readOnly={readOnly} component={AInput} placeholder="Profissão"/>
+                    {
+                      getFieldDecorator('profissao')(
+                        <Input readOnly={readOnly} placeholder="Ex.: Analista de Sistemas" />
+                      )
+                    }                      
                   </Form.Item>
                   <Form.Item {...formItemLayoutMedium} label="Escolaridade:" id="form.EscolaridadeId.label">
-                      <Field name="EscolaridadeId" readOnly={readOnly} placeholder="Selecione" component={ASelect}>
-                        {this.renderOptions(escolaridadeList)}
-                      </Field>
+                    {
+                      getFieldDecorator('EscolaridadeId')(
+                        <Select readOnly={readOnly} placeholder="Selecione">
+                          {this.renderOptions(escolaridadeList)}
+                        </Select>
+                      )
+                    }                      
                   </Form.Item>                  
-              </Panel>*/}
+              </Panel>
               
             </Collapse>
 
@@ -395,7 +397,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-  getGeneroSexual, getEscolaridade, getTipoSanguineo, getSituacaoFamiliar, getEstados, getCidades, init
+  getGeneroSexual, getEscolaridade, getTipoSanguineo, getSituacaoFamiliar, getEstados, getCidades
 }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(WrappedPacienteForm);

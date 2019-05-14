@@ -1,17 +1,11 @@
 import {BASE_URL} from '../main/config';
 
 import axios from 'axios';
-import {reset as resetForm, initialize} from 'redux-form';
 
 import { notification } from 'antd';
 
 import {PacienteTypes as Types } from '../types/pacienteTypes';
 import history from '../main/history';
-
-const INITIAL_VALUES = {
-    telefones: [{}],
-    enderecos: [{}]
-}; 
 
 export function getList(page = 1, paginate = 10, order = 'ASC', orderBy = 'nome', filtro){    
     const request = axios.get(`${BASE_URL}/paciente/?page=${page}&paginate=${paginate}&order=${order}&orderBy=${orderBy}&filtro=${filtro}`);
@@ -21,12 +15,6 @@ export function getList(page = 1, paginate = 10, order = 'ASC', orderBy = 'nome'
     }
 }
 
-export function init() {    
-    return [
-        initialize('pacienteForm', INITIAL_VALUES)
-    ];
-}
-
 const submit = (values, method) => {
     return function (dispatch) {        
         const id = values.id ? values.id : '';
@@ -34,8 +22,7 @@ const submit = (values, method) => {
         axios[method](`${BASE_URL}/paciente/${id}`, values)
         .then(resp => {
             console.log("Concluido envio");
-            dispatch([                
-                resetForm('pacienteForm'),
+            dispatch([
                 history.push('/paciente'),
                 notification.success({
                     message: 'Operação Realizada',
